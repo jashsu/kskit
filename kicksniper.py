@@ -105,7 +105,6 @@ class sniper(object):
             page = self.driver.find_element_by_tag_name('body').\
                    get_attribute('id')
             if page in ('user_sessions_new',):
-                print('Re-login')
                 self.login()
             elif page in ('pledges_edit',):
                 armed = self._snipe()
