@@ -87,8 +87,12 @@ class sniper(object):
             reward.click()
             self.driver.find_element_by_class_name('submit').submit()
             self.driver.find_element_by_class_name('confirm-yes').click()
-        self.count += 1
-        return True
+            return True # might not have successfully sniped, so check again
+        else:
+            sys.stdout.write(self._progbar())
+            sys.stdout.flush()
+            self.count += 1
+            return True
 
     def _progbar(self):
         pb = ''
@@ -100,7 +104,6 @@ class sniper(object):
     def loop(self):
         self.count, armed = 0, True
         while armed:
-            sys.stdout.write(self._progbar())
             self.driver.get(self.manage_url)
             page = self.driver.find_element_by_tag_name('body').\
                    get_attribute('id')
