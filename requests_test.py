@@ -11,6 +11,8 @@ from urllib import urlencode
 from json import load
 
 logging.basicConfig(level=logging.INFO)
+
+# enter valid login credentials into ks_auth_sample.json and rename it
 try:
     ks_auth_json = open('ks_auth.json')
     ks_auth = load(ks_auth_json)
