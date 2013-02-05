@@ -1,0 +1,8 @@
+# Private Credentials #
+#######################
+ks_auth.json
+
+# IntelliJ Files and Directories #
+##################################
+*.iml
+.idea/
