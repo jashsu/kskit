@@ -1,14 +1,15 @@
-'''
+"""
 Created on Jan 18, 2013
 
 @author: jason
-'''
+"""
 
 import requests, logging
 from lxml import etree
 from StringIO import StringIO
 from urllib import urlencode
 from json import load
+from pprint import pformat
 
 logging.basicConfig(level=logging.INFO)
 
@@ -37,14 +38,14 @@ data = {'utf8': '\xe2\x9c\x93',
         'remember_me': '1',
         'commit': 'Log me in!'}
 data.update(ks_auth)
-uedata = urlencode(data)
+ue_data = urlencode(data)
 
 # post the payload to authenticate the session
-r = s.post('https://www.kickstarter.com/session', data = uedata)
+r = s.post('https://www.kickstarter.com/session', data = ue_data)
 
 # get info about a backing tier on a sample project
-r = s.get('http://www.kickstarter.com/projects/weaver/empires-collide/pledge/edit')
-assert('LEGACY' in r.text)
+r = s.get('http://www.kickstarter.com/projects/iridiumstudios/there-came-an-echo-0/pledge/edit')
+assert('Jenkees' in r.text)
 t = parse_response(r)
-e = t.xpath("//input[@id='backing_backer_reward_id_1310707']")[0]
-logging.info(e.attrib)
+e = t.xpath("//input[@id='backing_backer_reward_id_1313020']")[0]
+logging.info('\n\n' + pformat(dict(e.attrib)))
