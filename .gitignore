@@ -2,6 +2,11 @@
 #######################
 ks_auth.json
 
+# Kickscraper Working Directories #
+###################################
+project_cache/*.json.gz
+project_backers/*.json
+
 # IntelliJ Files and Directories #
 ##################################
 *.iml
