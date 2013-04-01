@@ -39,13 +39,24 @@ class ProjectCacheV1(object):
 
     __version__ = 1
     project_cache_path = './project_cache/v1.json.gz'
+    project_cache = {}
+    session = requests.Session()
 
-    def initialize(self):
-        """Initialize a new empty project cache."""
+    def __init__(self):
+        """Initialize project cache from disk copy."""
 
-        f = gzip.open(self.project_cache_path, 'w+')
-        f.write(json.dumps({}))
-        f.close()
+        while True:
+            try:
+                fh = gzip.open(self.project_cache_path, 'rb')
+            except:
+                stdout.write('\n[{}] Unable to read project cache, regenerating'.format(time.ctime()))
+                fh = gzip.open(self.project_cache_path, 'w+')
+                fh.write(json.dumps({}))
+                fh.close()
+                continue
+            break
+        self.project_cache = json.loads(fh.read())
+        fh.close()
 
     def refresh(self):
         """Scan through the project cache and refresh all project information."""
@@ -53,47 +64,35 @@ class ProjectCacheV1(object):
         # todo: implement this
         pass
 
-    def update(self, creator, project, force=False):
+    def update(self, creator, project, progress_bar, force=False):
         """Adds a project to the project cache if it hasn't already been cached."""
 
         sanitizer = [('\\\\"', "'"),]
-
-        while True:
-            try:
-                f = gzip.open(self.project_cache_path, 'rb')
-                project_cache = json.loads(f.read())
-            except:
-                stdout.write('\nUnable to read project cache, attempting to regenerate')
-                self.initialize()
-                continue
-            break
-
-        f.close()
-        if project in project_cache and force == False:
-            return  # Exit quickly if we can
-
-        f = gzip.open(self.project_cache_path, 'wb')
         project_url = 'http://www.kickstarter.com/projects/{}/{}'.format(creator, project)
-        session = requests.Session()
-        try:
-            response = session.get(project_url)
+
+        if project in self.project_cache and force == False:
+            return  # Exit quickly if we can
+        else:
+            response = self.session.get(project_url)
             response_tree = etree.parse(StringIO(response.text), etree.HTMLParser(encoding = 'UTF-8'))
             current_project = HTMLParser().unescape(response_tree.xpath('//head/script[contains(text(), "window.current_project")]')[0].text.split('"')[1])
             for rule in sanitizer:
                 current_project = current_project.replace(*rule)
-            project_cache[project] = json.loads(current_project)
-        finally:
-            f.write(json.dumps(project_cache))
-            session.close()
-            f.close()
+            self.project_cache[project] = json.loads(current_project)
+            progress_bar.draw('c')
+            progress_bar.increment()
 
     def query(self, project):
         """Get information about a project from the project cache."""
 
-        f = gzip.open(self.project_cache_path, 'rb')
-        project_cache = json.loads(f.read())
-        f.close()
-        return project_cache[project]    # Should be present
+        return self.project_cache[project]    # todo: better handling
+
+    def close(self):
+        """Perform some cleanup tasks."""
+        fh = gzip.open(self.project_cache_path, 'w+')
+        fh.write(json.dumps(self.project_cache))
+        fh.close()
+        self.session.close()
 
 class UserCacheV1(object):
     """Simple object for caching user information. Todo: implement this."""
@@ -197,7 +196,7 @@ def print_similarity_statistics(project_cache, project_backers_processed, projec
         progress_bar.draw()
         progress_bar.increment()
         for creator_project in user['user_backed_projects']:
-            project_cache.update(*creator_project)
+            project_cache.update(*creator_project, progress_bar=progress_bar)
             project = creator_project[1]
             if project in projects_data:
                 projects_data[project][0] += 1   # Increment count
@@ -248,6 +247,7 @@ def main(args):
     project_backers_processed = process_project_backers(creator, project, project_backers)
     print_similarity_statistics(project_cache, project_backers_processed, project_threshold, category_threshold)
 
+    project_cache.close()
     stdout.write('\n\n')
 
 if __name__ == '__main__':
