@@ -71,6 +71,8 @@ class ProjectCacheV1(object):
         project_url = 'http://www.kickstarter.com/projects/{}/{}'.format(creator, project)
 
         if project in self.project_cache and force == False:
+            progress_bar.draw('c')
+            progress_bar.increment()
             return  # Exit quickly if we can
         else:
             response = self.session.get(project_url)
@@ -79,7 +81,7 @@ class ProjectCacheV1(object):
             for rule in sanitizer:
                 current_project = current_project.replace(*rule)
             self.project_cache[project] = json.loads(current_project)
-            progress_bar.draw('c')
+            progress_bar.draw('u')
             progress_bar.increment()
 
     def query(self, project):
