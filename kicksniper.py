@@ -20,8 +20,8 @@ __version__ = '1'
 
 class sniper(object):
     def init(self):
-        self.credentials = (('email', self.args[1]),
-                            ('password', self.args[2]))
+        self.credentials = (('user_session_email', self.args[1]),
+                            ('user_session_password', self.args[2]))
         self.manage_url = 'http://www.kickstarter.com/projects/' +\
                           self.args[3] + '/' +\
                           self.args[4] + '/pledge/edit?ref=manage_pledge'
